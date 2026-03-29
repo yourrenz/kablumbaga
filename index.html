@@ -28,7 +28,6 @@
   <body>
     <div id="start-screen">
       <button id="start-button">AR DENEYİMİNİ BAŞLAT</button>
-      <!-- DÜZELTME 3: Kullanıcıyı bilgilendir -->
       <p id="info-text">Başlatmak için kamera iznine ihtiyaç duyulacaktır.</p>
     </div>
 
@@ -40,16 +39,13 @@
       device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <!-- DÜZELTME 1: muted eklendi (iOS zorunluluğu), preload düzeltildi, loop düzeltildi -->
-        <!-- DÜZELTME 4: crossorigin kaldırıldı (aynı sunucudan yükleniyorsa gereksiz) -->
         <video 
           id="turtleVideo" 
-          preload="metadata" 
+          preload="auto" 
           loop 
           muted
           playsinline 
           webkit-playsinline>
-          <!-- DÜZELTME 2: source etiketi ile MIME türü belirtildi -->
           <source src="kaplumbag.mp4" type="video/mp4" />
         </video>
       </a-assets>
@@ -57,11 +53,10 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="mytarget" mindar-image-target="targetIndex: 0">
-        <!-- DÜZELTME 5: 16:9 video için en/boy oranı düzeltildi -->
         <a-video 
           src="#turtleVideo" 
-          width="1.777" 
-          height="1" 
+          width="1" 
+          height="0.5625" 
           position="0 0 0"
           rotation="0 0 0">
         </a-video>
@@ -69,32 +64,35 @@
     </a-scene>
 
     <script>
-      const startButton = document.getElementById('start-button');
-      const startScreen = document.getElementById('start-screen');
-      const video = document.getElementById('turtleVideo');
+      // STABİLİTE: Tüm DOM yüklendikten sonra kodun çalışmasını garanti altına alıyoruz
+      document.addEventListener("DOMContentLoaded", function() {
+        const startButton = document.getElementById('start-button');
+        const startScreen = document.getElementById('start-screen');
+        const video = document.getElementById('turtleVideo');
+        const target = document.getElementById('mytarget');
 
-      startButton.addEventListener('click', () => {
-        startScreen.style.display = 'none';
-        // iOS için tarayıcı kilidini açıyoruz (muted + play zorunlu)
-        video.muted = true;
-        video.play().then(() => {
-          video.pause();
-          video.currentTime = 0;
-          console.log("Video hazır.");
-        }).catch(err => {
-          console.warn("Video ön oynatma hatası:", err);
+        startButton.addEventListener('click', () => {
+          startScreen.style.display = 'none';
+          
+          // Mobil tarayıcı kilitlerini açmak için ön oynatma
+          video.play().then(() => {
+            video.pause();
+            console.log("Video kilitleri açıldı.");
+          }).catch(err => {
+            console.warn("Video ön oynatma uyarısı:", err);
+          });
         });
-      });
 
-      const target = document.getElementById('mytarget');
+        target.addEventListener("targetFound", () => {
+          // ANDROİD DONMA ÇÖZÜMÜ: currentTime = 0 buradan kaldırıldı. Sadece play() tetikleniyor.
+          video.play().catch(err => console.warn("Oynatma hatası:", err));
+        });
 
-      target.addEventListener("targetFound", () => {
-        video.currentTime = 0;
-        video.play().catch(err => console.warn("targetFound play hatası:", err));
-      });
-
-      target.addEventListener("targetLost", () => {
-        video.pause();
+        target.addEventListener("targetLost", () => {
+          // Hedef kaybolduğunda video durdurulur ve başa sarılır.
+          video.pause();
+          video.currentTime = 0; 
+        });
       });
     </script>
   </body>
