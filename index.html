@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>Kaplumbağa Terbiyecisi AR</title>
+    <title>Kaplumbağa AR Projesi</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -15,7 +15,7 @@
 
       /* GÜNLÜKLER KUTUSU */
       #version-box {
-        position: fixed; top: 10px; right: 10px; width: 170px;
+        position: fixed; top: 10px; right: 10px; width: 180px;
         background: rgba(0, 0, 0, 0.7); color: white; padding: 10px;
         border-radius: 8px; font-size: 11px; z-index: 10000;
         backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);
@@ -30,9 +30,8 @@
       }
       #start-button {
         padding: 15px 40px; font-size: 18px; font-weight: bold;
-        background: #c6a15b; /* Tablo tonlarına uygun altın rengi */
-        color: white; border: none; border-radius: 30px;
-        cursor: pointer; margin-top: 20px; box-shadow: 0 4px 15px rgba(198, 161, 91, 0.5);
+        background: #4caf50; color: white; border: none; border-radius: 30px;
+        cursor: pointer; margin-top: 20px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5);
       }
 
       /* TARAMA REHBERİ */
@@ -48,14 +47,15 @@
 
     <div id="version-box">
       <strong>Kaplumbağa AR v1.2.0</strong><br>
-      - Kaplumbağa Terbiyecisi aktif.<br>
-      - Video dikey (9:16) ayarlandı.
+      - targets.mind entegre edildi.<br>
+      - kaplumbag.mp4 eklendi.<br>
+      - GitHub uyumlu hale getirildi.
     </div>
 
     <div id="start-screen">
-      <h1>Kaplumbağa Terbiyecisi AR</h1>
+      <h1>Kaplumbağa AR</h1>
       <p>Deneyimi başlatmak için butona dokunun</p>
-      <button id="start-button">DENEYİMİ BAŞLAT</button>
+      <button id="start-button">BAŞLAT</button>
     </div>
 
     <div id="scanning-overlay"></div>
@@ -78,7 +78,7 @@
           id="ar-video" 
           src="#turtleVideo" 
           width="1" 
-          height="1.78" 
+          height="1" 
           position="0 0 0"
           rotation="0 0 0">
         </a-video>
@@ -95,13 +95,10 @@
       startButton.addEventListener('click', () => {
         startScreen.style.display = 'none';
         scanningOverlay.style.display = 'block';
-        
-        // Tarayıcıların otomatik oynatma engelini aşmak için kısa bir oynat-duraklat
+        // Tarayıcı kısıtlamalarını aşmak için videoyu önce oynatıp duraklatıyoruz
         video.play().then(() => {
           video.pause();
           video.currentTime = 0;
-        }).catch(err => {
-          console.warn("Video yükleme uyarısı:", err);
         });
       });
 
