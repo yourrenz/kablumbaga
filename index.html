@@ -7,44 +7,60 @@
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
     <style>
       body { margin: 0; overflow: hidden; }
       #start-screen {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.9); z-index: 9999;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        color: white;
+        color: white; gap: 12px;
       }
       #start-button {
         padding: 15px 30px; font-size: 20px; background: #2ecc71;
         color: white; border: none; border-radius: 10px; cursor: pointer;
       }
+      #info-text {
+        font-size: 13px; color: rgba(255,255,255,0.6);
+        text-align: center; max-width: 280px; line-height: 1.5;
+      }
     </style>
   </head>
   <body>
-
     <div id="start-screen">
       <button id="start-button">AR DENEYİMİNİ BAŞLAT</button>
+      <!-- DÜZELTME 3: Kullanıcıyı bilgilendir -->
+      <p id="info-text">Başlatmak için kamera iznine ihtiyaç duyulacaktır.</p>
     </div>
 
     <a-scene 
-      mindar-image="imageTargetSrc: targets.mind; uiScanning: yes;" 
+      mindar-image="imageTargetSrc: targets.mind; uiScanning: no;"
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
       device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <video id="turtleVideo" src="kaplumbag.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+        <!-- DÜZELTME 1: muted eklendi (iOS zorunluluğu), preload düzeltildi, loop düzeltildi -->
+        <!-- DÜZELTME 4: crossorigin kaldırıldı (aynı sunucudan yükleniyorsa gereksiz) -->
+        <video 
+          id="turtleVideo" 
+          preload="metadata" 
+          loop 
+          muted
+          playsinline 
+          webkit-playsinline>
+          <!-- DÜZELTME 2: source etiketi ile MIME türü belirtildi -->
+          <source src="kaplumbag.mp4" type="video/mp4" />
+        </video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity id="mytarget" mindar-image-target="targetIndex: 0">
+        <!-- DÜZELTME 5: 16:9 video için en/boy oranı düzeltildi -->
         <a-video 
           src="#turtleVideo" 
-          width="1" 
+          width="1.777" 
           height="1" 
           position="0 0 0"
           rotation="0 0 0">
@@ -59,19 +75,24 @@
 
       startButton.addEventListener('click', () => {
         startScreen.style.display = 'none';
-        // Tarayıcı kilidini açmak için videoyu oynatıp hemen durduruyoruz
+        // iOS için tarayıcı kilidini açıyoruz (muted + play zorunlu)
+        video.muted = true;
         video.play().then(() => {
           video.pause();
+          video.currentTime = 0;
           console.log("Video hazır.");
         }).catch(err => {
-          console.log("Video oynatma hatası:", err);
+          console.warn("Video ön oynatma hatası:", err);
         });
       });
 
       const target = document.getElementById('mytarget');
+
       target.addEventListener("targetFound", () => {
-        video.play();
+        video.currentTime = 0;
+        video.play().catch(err => console.warn("targetFound play hatası:", err));
       });
+
       target.addEventListener("targetLost", () => {
         video.pause();
       });
